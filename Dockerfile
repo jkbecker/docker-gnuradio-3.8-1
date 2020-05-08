@@ -153,6 +153,25 @@ RUN git clone https://github.com/bastibl/gr-ieee802-15-4.git \
     && sudo make install \
     && sudo ldconfig
 
+# install modified zigbee stuff from NISLAB
+RUN git clone https://github.com/gefa/gr-bar.git \
+    && cd gr-bar \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make \
+    && sudo make install \
+    && sudo ldconfig
+
+RUN git clone https://github.com/gefa/gr-ie-802154.git \
+    && cd gr-ie-802154 \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make \
+    && sudo make install \
+    && sudo ldconfig
+
 #ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.6/dist-packages/
 #ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/
 
@@ -163,6 +182,17 @@ RUN git clone https://github.com/analogdevicesinc/gr-iio.git \
     && make && make install \
     && cd .. \
     && ldconfig
+
+RUN apt-get install -y python3-pip
+RUN pip3 install setuptools
+RUN git clone https://github.com/secdev/scapy.git \
+    && cd scapy \
+    && python3 setup.py install
+RUN apt-get install -y libcap2-bin nano
+#RUN useradd -ms /bin/bash shark
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install tshark
+RUN pip3 install pyshark
+RUN pip3 install prettytable
 
 #RUN find / -name *pluto* #ls /usr/share/gnuradio/grc/blocks/
 #RUN sudo cp /usr/share/gnuradio/grc/blocks/iio_pluto_source.block.yml /usr/local/share/gnuradio/grc/blocks/
@@ -202,5 +232,15 @@ ENV PYTHONPATH=/usr/local/lib/python3/dist-packages/
 ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib64/
 #RUN echo $PYTHONPATH
 RUN grcc /opt/gr-ieee802-15-4/examples/ieee802_15_4_OQPSK_PHY.grc
+RUN chmod +x /home/gnuradio/.grc_gnuradio/ieee802_15_4_oqpsk_phy.py
 RUN ls /opt/gr-ieee802-15-4/examples/
+#COPY gnuradio/zig_len_doc_pluto3.8.grc /home/gnuradio/
+COPY gnuradio/attack_len_dos_zig_efr32.py /home/gnuradio/
+COPY gnuradio/post_process_DOS_efr32.py /home/gnuradio/
+COPY gnuradio/test.grc /home/gnuradio/
+#COPY gnuradio/fmradio_pluto.grc /home/gnuradio/
+#COPY gnuradio/zig_len_dos.grc /home/gnuradio/
+
+RUN sudo apt-get update && sudo apt-get install -y tcpdump wireshark
+COPY gnuradio/zig_len_dos_pluto.grc /home/gnuradio
 ENTRYPOINT [ "gnuradio-companion" ]
