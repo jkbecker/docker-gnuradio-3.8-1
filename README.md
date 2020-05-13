@@ -21,7 +21,13 @@ Run the docker image, with volume mounts for running gnuradio-companion
 and a data directory:
 
 ```
-docker run -it -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v </local/path/to/data>:/home/developer/data --name <container-name> theseuscores/gnuradio:v3.8.0.0-rc1
+./run-over-network
+```
+
+For an additional shell run:
+
+```
+docker exec -it gnuradio bash
 ```
 
 To start and reattach to a stopped container:

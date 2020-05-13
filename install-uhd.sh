@@ -5,7 +5,7 @@
 
 set -e
 set -x
-
+UHD_COMMIT=master # for some reason this is not picked up from Dockerfile
 # Initialize
 git clone https://github.com/ettusresearch/uhd.git -b ${UHD_COMMIT} --depth 1
 

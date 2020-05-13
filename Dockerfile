@@ -36,42 +36,6 @@ RUN apt-get update && apt-get install -y \
     #rtl-sdr \
 && rm -rf /var/lib/apt/lists/*
 
-# Build Info
-ARG UHD_COMMIT=master
-ARG GR_COMMIT=v3.8.1.0
-ARG MAKE_THREADS=2
-
-# UHD cmake defaults (overrideable)
-ARG UHD_ENABLE_RFNOC=0
-ARG UHD_ENABLE_B100=0
-ARG UHD_ENABLE_B200=1
-ARG UHD_ENABLE_USRP2=1
-ARG UHD_ENABLE_X300=1
-ARG UHD_ENABLE_MPMD=1
-ARG UHD_ENABLE_N300=1
-ARG UHD_ENABLE_E320=1
-ARG UHD_ENABLE_EXAMPLES=1
-ARG UHD_ENABLE_UTILS=1
-
-WORKDIR /home/root
-COPY install-*.sh ./
-RUN ./install-uhd.sh
-RUN ./install-gnuradio.sh
-
-#RUN apt-get install udev -y
-RUN apt-get install git -y
-#RUN git clone https://github.com/EttusResearch/uhd.git
-RUN mkdir /etc/udev && mkdir /etc/udev/rules.d
-RUN cp uhd/host/utils/uhd-usrp.rules /etc/udev/rules.d
-
-#RUN apt-get install libudev-dev -python3-yaml
-#RUN apt-get install rtl-sdr
-
-RUN apt-get update && apt-get install -y \
-#rtl-sdr \
-libusb-1.0.0-dev cmake kmod sudo\
-&& rm -rf /var/lib/apt/lists/*
-
 RUN apt-get update && apt upgrade -yf \
     && apt install -y software-properties-common\
     && add-apt-repository -y ppa:myriadrf/gnuradio \
@@ -80,6 +44,9 @@ RUN apt-get update && apt upgrade -yf \
     && apt install -y bison \
         build-essential \
         cmake \
+        kmod \
+        sudo \
+        git \
         doxygen \
         flex cmake libaio-dev \
         git \
@@ -114,8 +81,35 @@ RUN apt-get update && apt upgrade -yf \
         #python-qwt5-qt4 \
         #python-zmq \
         swig \
-    && apt install -y xterm git libvolk1-bin --no-install-recommends \
-    && echo "xterm_executable=/usr/bin/xterm" >> /usr/local/etc/gnuradio/conf.d/grc.conf # /etc/gnuradio/conf.d/grc.conf
+    && apt install -y xterm git libvolk1-bin --no-install-recommends #\
+    #&& echo "xterm_executable=/usr/bin/xterm" >> /usr/local/etc/gnuradio/conf.d/grc.conf # /etc/gnuradio/conf.d/grc.conf
+
+# Build Info
+ARG UHD_COMMIT=master
+ARG GR_COMMIT=v3.8.1.0
+ARG MAKE_THREADS=2
+
+# UHD cmake defaults (overrideable)
+ARG UHD_ENABLE_RFNOC=0
+ARG UHD_ENABLE_B100=0
+ARG UHD_ENABLE_B200=1
+ARG UHD_ENABLE_USRP2=1
+ARG UHD_ENABLE_X300=1
+ARG UHD_ENABLE_MPMD=1
+ARG UHD_ENABLE_N300=1
+ARG UHD_ENABLE_E320=1
+ARG UHD_ENABLE_EXAMPLES=1
+ARG UHD_ENABLE_UTILS=1
+
+WORKDIR /home/root
+COPY install-*.sh ./
+RUN ./install-uhd.sh
+RUN ./install-gnuradio.sh
+
+RUN echo "xterm_executable=/usr/bin/xterm" >> /usr/local/etc/gnuradio/conf.d/grc.conf # /etc/gnuradio/conf.d/grc.conf
+
+RUN mkdir /etc/udev && mkdir /etc/udev/rules.d
+RUN cp uhd/host/utils/uhd-usrp.rules /etc/udev/rules.d
 
 
 # install plutosdr stuff
@@ -243,4 +237,4 @@ COPY gnuradio/test.grc /home/gnuradio/
 
 RUN sudo apt-get update && sudo apt-get install -y tcpdump wireshark
 COPY gnuradio/zig_len_dos_pluto.grc /home/gnuradio
-ENTRYPOINT [ "gnuradio-companion" ]
+#ENTRYPOINT [ "gnuradio-companion" ]

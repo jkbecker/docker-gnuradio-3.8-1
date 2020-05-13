@@ -114,18 +114,22 @@ if __name__ == '__main__':
 
     def ctrl(tb,file):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock_offset = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock_len = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock_offset.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        #sock_len = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        #sock_len.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         BEACON = '\x03\x08\xf2\xff\xff\xff\xff\x07\xcd\xe1' 
         STEPHELLO = '\x03\x08' 
-        soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        soc.settimeout(1)
+        #soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        #soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        #soc.settimeout(1)
         # Bind the socket to the port
         client_address = ('127.0.0.1', 52001)
-        server_address = ('127.0.0.1', 52002)
+        #server_address = ('127.0.0.1', 52002)
         sock_offset_addr = ('127.0.0.1', 52003)
-        sock_len = ('127.0.0.1', 52004)
-        soc.bind(server_address)
+        #sock_len = ('127.0.0.1', 52004)
+        #soc.bind(server_address)
         # for i in range(10):
         #     sock.sendto(bytes(BEACON), ("127.0.0.1", 52001))
         #     time.sleep(1)
@@ -138,7 +142,7 @@ if __name__ == '__main__':
         print(DELAYS)
         
         PRR = []
-        sock_offset.sendto(str(length).encode('utf-8'), ('127.0.0.1', 52004))
+        #sock_len.sendto(str(length).encode('utf-8'), ('127.0.0.1', 52004))
         offset = 0
         for step in STEPS:
             print(offset)
@@ -161,7 +165,8 @@ if __name__ == '__main__':
                 # cmd_id 4- data 7-beacon request ...
                 # addresses GE-0xed15 Osram-e852 Ikea-0003 Cree-c320
                 frame = Dot15d4FCS(fcf_ackreq=1, seqnum=offset) / Dot15d4Cmd(src_panid=0xFFFF, src_addr=0xFFFF, dest_addr=0xFFFF, cmd_id=7)
-                #Dot15d4(fcf_frametype=3, seqnum=int(random.random()*100), fcf_ackreq=1)/Dot15d4Beacon(src_addr=0xFFFF, src_panid=0xFFFF)
+                #frame = Dot15d4(fcf_frametype=3, seqnum=offset, fcf_ackreq=1)/Dot15d4Beacon(src_addr=0xFFFF, src_panid=0xFFFF)
+                #frame = Dot15d4FCS(fcf_ackreq=1, seqnum=offset) / Dot15d4Beacon(src_panid=0xFFFF, src_addr=0xFFFF)
                 sock.sendto(bytes(frame), ("127.0.0.1", 52001))
                 
                 # #while True:
@@ -206,6 +211,11 @@ if __name__ == '__main__':
         file.write(stdout_text.decode('utf-8'))
         file.write(stderr_text.decode('utf-8'))
         file.close()
+        os.system("cat {}".format(results_file))
+        sock.close()
+        sock_offset.close()
+        #sock_len.close()
+        #soc.close()
         tb.stop()
 
     t = Timer(5, ctrl, [tb,file])
