@@ -48,6 +48,8 @@ from distutils.version import StrictVersion
 from threading import Timer
 
 #from PyQt4 import Qt
+from PyQt5 import Qt
+from PyQt5.QtCore import QObject, pyqtSlot
 
 from zig_len_dos_pluto import \
     zig_len_dos_pluto as flowgraph
@@ -98,56 +100,39 @@ if __name__ == '__main__':
     file.write('feedbackType\t'+'\n')
     file.write('channel/freq\t'+'\n')
 
-    # options=None
-    # if options is None:
-    #     options, _ = argument_parser().parse_args()
-    if gr.enable_realtime_scheduling() != gr.RT_OK:
-        print("Error: failed to enable real-time scheduling.")
 
-    # if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
-    #     style = gr.prefs().get_string('qtgui', 'style', 'raster')
-    #     Qt.QApplication.setGraphicsSystem(style)
-    # qapp = Qt.QApplication(sys.argv)
-
-    tb = flowgraph(mctest=0.1)
-    tb.start()
-
-    def ctrl(tb,file):
+    def test(tb,file,length):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock_offset = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock_offset.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        #sock_len = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        #sock_len.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock_len = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock_len.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         BEACON = '\x03\x08\xf2\xff\xff\xff\xff\x07\xcd\xe1' 
         STEPHELLO = '\x03\x08' 
-        #soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        #soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        #soc.settimeout(1)
+        # soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        # soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # soc.settimeout(1)
         # Bind the socket to the port
-        client_address = ('127.0.0.1', 52001)
+        sock_address = ('127.0.0.1', 52001)
         #server_address = ('127.0.0.1', 52002)
         sock_offset_addr = ('127.0.0.1', 52003)
-        #sock_len = ('127.0.0.1', 52004)
+        sock_len_addr = ('127.0.0.1', 52004)
         #soc.bind(server_address)
         # for i in range(10):
         #     sock.sendto(bytes(BEACON), ("127.0.0.1", 52001))
         #     time.sleep(1)
-
-
         STEPS = int(1+abs(int(STOP)-int(START))/int(STEP))
         STEPS = [x for x in range(STEPS)]
         DELAYS = range(min(int(START),int(STOP)),max(int(STOP),int(START))+int(STEP),int(STEP))
         print(STEPS)
         print(DELAYS)
-        
-        PRR = []
-        #sock_len.sendto(str(length).encode('utf-8'), ('127.0.0.1', 52004))
+        # cureently no effect since acess_code_prefixer not implemented...
+        sock_len.sendto(chr(length).encode('utf-8'), sock_len_addr)
         offset = 0
         for step in STEPS:
             print(offset)
-            msg_num = 0
-
+            print(str(offset).encode('utf-8'))
             #tb.lock()
             #tb.wait()
             #tb.stop()
@@ -156,10 +141,13 @@ if __name__ == '__main__':
             #tb.set_mctest(1)
             #tb.set_offset(DELAYS[step])
             #print('Got offset: '+str(tb.get_offset()))
-            sock_offset.sendto(str(offset).encode('utf-8'), ('127.0.0.1', 52003))
+
+            # comment out until we fix pad2 implementation - ascii offset
+            sock_offset.sendto(chr(offset+47).encode('utf-8'),sock_offset_addr)
+
             #tb.unlock()
             #tb.start()
-            time.sleep(0.2)
+            time.sleep(1)
             
             for trial in range(RUNS):
                 # cmd_id 4- data 7-beacon request ...
@@ -167,28 +155,28 @@ if __name__ == '__main__':
                 frame = Dot15d4FCS(fcf_ackreq=1, seqnum=offset) / Dot15d4Cmd(src_panid=0xFFFF, src_addr=0xFFFF, dest_addr=0xFFFF, cmd_id=7)
                 #frame = Dot15d4(fcf_frametype=3, seqnum=offset, fcf_ackreq=1)/Dot15d4Beacon(src_addr=0xFFFF, src_panid=0xFFFF)
                 #frame = Dot15d4FCS(fcf_ackreq=1, seqnum=offset) / Dot15d4Beacon(src_panid=0xFFFF, src_addr=0xFFFF)
-                sock.sendto(bytes(frame), ("127.0.0.1", 52001))
+                sock.sendto(bytes(frame), sock_address)
                 
-                # #while True:
-                # #print('\nwaiting to receive message')
-                # try:
-                #     data = soc.recv(200) # try to receive 100 bytes
-                #     rx_msg = []
-                #     for i in data:
-                #         rx_msg.append(ord(i))
-                #         #sys.stdout.write("\\x{:02x}".format(ord(i)))
-                #     print('')
-                #     #print(rx_msg)
-                #     try:
-                #         if rx_msg[0] == 0x00 and rx_msg[1] == 0x80:
-                #             #print('think i found beacon')
-                #             msg_num = msg_num + 1
-                #         else:
-                #             pass
-                #     except IndexError as e:
-                #         pass
-                # except socket.timeout: # fail after 1 second of no activity
-                #     print("Didn't receive data! [Timeout]")
+#                # #while True:
+#                print('\nwaiting to receive message')
+#                try:
+#                     data = soc.recv(200) # try to receive 100 bytes
+#                     rx_msg = []
+#                     for i in data:
+#                         rx_msg.append(ord(i))
+#                         #sys.stdout.write("\\x{:02x}".format(ord(i)))
+#                     print('')
+#                     #print(rx_msg)
+#                     try:
+#                         if rx_msg[0] == 0x00 and rx_msg[1] == 0x80:
+#                             #print('think i found beacon')
+#                             msg_num = msg_num + 1
+#                         else:
+#                             pass
+#                     except IndexError as e:
+#                         pass
+#                except socket.timeout: # fail after 1 second of no activity
+#                     print("Didn't receive data! [Timeout]")
                 # finally:
                 #     pass
                 time.sleep(0.2)
@@ -214,12 +202,43 @@ if __name__ == '__main__':
         os.system("cat {}".format(results_file))
         sock.close()
         sock_offset.close()
-        #sock_len.close()
+        sock_len.close()
         #soc.close()
-        tb.stop()
 
-    t = Timer(5, ctrl, [tb,file])
+
+
+    # options=None
+    # if options is None:
+    #     options, _ = argument_parser().parse_args()
+    if gr.enable_realtime_scheduling() != gr.RT_OK:
+        print("Error: failed to enable real-time scheduling.")
+
+    if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
+       style = gr.prefs().get_string('qtgui', 'style', 'raster')
+       Qt.QApplication.setGraphicsSystem(style)
+    qapp = Qt.QApplication(sys.argv)
+
+
+    tb = flowgraph(mctest=0.1,length=length)
+    tb.start()
+    #tb.show()
+
+    def sig_handler(sig=None, frame=None):
+        Qt.QApplication.quit()
+
+    signal.signal(signal.SIGINT, sig_handler)
+    signal.signal(signal.SIGTERM, sig_handler)
+
+    t = Timer(5, test, [tb,file,length])
     t.start()
-    #time.sleep(55)
-    tb.wait()
- 
+    # try:
+    #     input('Press Enter to quit: ')
+    # except EOFError:
+    #     pass
+    def quitting():
+        tb.stop()
+        tb.wait()
+    qapp.aboutToQuit.connect(quitting)
+    qapp.exec_()
+
+

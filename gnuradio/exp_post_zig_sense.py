@@ -12,17 +12,20 @@ if len(sys.argv) > 1:
     filename = sys.argv[1]
 else:
     filename = input("Input the path of your PCAP File: ")
-
+if len(sys.argv) > 2:
+    seq = sys.argv[2]
+else:
+    seq = input("Input the expected seq number to search for: ")
 pcap = pyshark.FileCapture(filename)
 
-table = PrettyTable()
-table.field_names = ["Seq Num", "Sent #", "Received #", "Received %"]
+# table = PrettyTable()
+# table.field_names = ["Seq Num", "Sent #", "Received #", "Received %"]
 
 count = dict()  # format of -- seq #: [send_count, recv_count]
 
 max_sent = 10 # maximum requests sent per each seq number
-min_seq = 0 # minimum seq number
-max_seq = 20 # maximum seq number
+min_seq = int(seq) # minimum seq number
+max_seq = int(seq) # maximum seq number
 beacon_req = True # true for beacon req, false for data ack req
 
 for ii in range(min_seq, max_seq+1):
@@ -61,8 +64,10 @@ else:
             found_req = False
 
 for seq_num, pkt_counts in count.items(): # pkt_counts in format of [send_count, recv_count]
-    table.add_row([seq_num, pkt_counts[0], pkt_counts[1], f"{round(pkt_counts[1]*100/pkt_counts[0], 1)}%"])
-f= open("zig"+str(datetime.now())+".txt","w+")
-print(table)
-print(table, file=f)
-f.close()
+    print([seq_num, pkt_counts[0], pkt_counts[1], f"{round(pkt_counts[1]*100/pkt_counts[0], 1)}%"])
+#    table.add_row([seq_num, pkt_counts[0], pkt_counts[1], f"{round(pkt_counts[1]*100/pkt_counts[0], 1)}%"])
+#f= open("zig"+str(datetime.now())+".txt","w+")
+#print(table)
+#print(table, file=f)
+
+#f.close()

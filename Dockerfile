@@ -147,6 +147,15 @@ RUN git clone https://github.com/bastibl/gr-ieee802-15-4.git \
     && sudo make install \
     && sudo ldconfig
 
+RUN git clone https://github.com/gefa/gr-ie-802154.git \
+    && cd gr-ie-802154 \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make \
+    && sudo make install \
+    && sudo ldconfig
+
 # install modified zigbee stuff from NISLAB
 RUN git clone https://github.com/gefa/gr-bar.git \
     && cd gr-bar \
@@ -157,14 +166,7 @@ RUN git clone https://github.com/gefa/gr-bar.git \
     && sudo make install \
     && sudo ldconfig
 
-RUN git clone https://github.com/gefa/gr-ie-802154.git \
-    && cd gr-ie-802154 \
-    && mkdir build \
-    && cd build \
-    && cmake .. \
-    && make \
-    && sudo make install \
-    && sudo ldconfig
+RUN /usr/local/bin/uhd_images_downloader
 
 #ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.6/dist-packages/
 #ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/
@@ -177,6 +179,8 @@ RUN git clone https://github.com/analogdevicesinc/gr-iio.git \
     && cd .. \
     && ldconfig
 
+
+
 RUN apt-get install -y python3-pip
 RUN pip3 install setuptools
 RUN git clone https://github.com/secdev/scapy.git \
@@ -187,6 +191,7 @@ RUN apt-get install -y libcap2-bin nano
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install tshark
 RUN pip3 install pyshark
 RUN pip3 install prettytable
+
 
 #RUN find / -name *pluto* #ls /usr/share/gnuradio/grc/blocks/
 #RUN sudo cp /usr/share/gnuradio/grc/blocks/iio_pluto_source.block.yml /usr/local/share/gnuradio/grc/blocks/
@@ -199,8 +204,53 @@ COPY pulse-client.conf /etc/pulse/client.conf
 
 RUN sed -i "s/enable-shm = yes/enable-shm = no/" /etc/pulse/daemon.conf
 
+RUN apt-get install cmake xorg-dev libglu1-mesa-dev -y
+WORKDIR /opt
+RUN git clone https://github.com/glfw/glfw \
+&& cd glfw\
+&& mkdir build\
+&& cd build\
+&& cmake ../ -DBUILD_SHARED_LIBS=true\
+&& make\
+&& sudo make install\
+&& sudo ldconfig
+RUN apt-get install nvidia-opencl-dev opencl-headers -y
+RUN apt-get install nvidia-modprobe -y
+
+RUN git clone git://git.osmocom.org/gr-fosphor\
+&& cd gr-fosphor\
+&& mkdir build\
+&& cd build\
+&& cmake ..\
+&& make\
+&& sudo make install\
+&& sudo ldconfig
+
 RUN apt-get -y clean && apt-get -y autoremove \
     && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt
+RUN git clone https://github.com/quiet/libfec \
+&& cd libfec \
+&& mkdir build \
+&& cd build \
+&& cmake .. \
+&& make \
+&& sudo make install \
+&& sudo ldconfig
+
+RUN pip3 install --user --upgrade construct requests
+
+RUN git clone --recursive https://github.com/daniestevez/gr-satellites.git\
+&& cd gr-satellites\
+&& mkdir build \
+&& cd build \
+&& cmake .. \
+&& make \
+&& sudo make install \
+&& sudo ldconfig
+
+
 
 ENV UNAME gnuradio
 
@@ -238,3 +288,7 @@ COPY gnuradio/test.grc /home/gnuradio/
 RUN sudo apt-get update && sudo apt-get install -y tcpdump wireshark
 COPY gnuradio/zig_len_dos_pluto.grc /home/gnuradio
 #ENTRYPOINT [ "gnuradio-companion" ]
+
+
+
+
