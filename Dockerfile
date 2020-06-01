@@ -289,6 +289,19 @@ RUN sudo apt-get update && sudo apt-get install -y tcpdump wireshark
 COPY gnuradio/zig_len_dos_pluto.grc /home/gnuradio
 #ENTRYPOINT [ "gnuradio-companion" ]
 
+RUN sudo apt-get update && sudo apt-get install ssh openssh-server -y
+RUN echo 'gnuradio:ROFgyt-6' | sudo chpasswd
 
-
-
+RUN sudo mkdir /var/run/sshd
+RUN sudo sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+# SSH login fix. Otherwise user is kicked off after login
+RUN sudo sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+ENV NOTVISIBLE "in users profile"
+RUN echo "export VISIBLE=now" | sudo tee -a /etc/profile
+#CMD sudo systemctl ssh start
+#CMD sudo systemctl ssh enable
+#CMD service ssh status
+EXPOSE 22
+#CMD sudo /usr/sbin/sshd -D
+RUN sudo apt-get install beep -y #sudo apt-get install gnustep-gui-runtime -y
+#RUN usermod -a -G audio $USERNAME
