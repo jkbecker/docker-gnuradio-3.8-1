@@ -33,7 +33,6 @@ RUN apt-get update && apt-get install -y \
     python3-setuptools \
     x11-apps \
     usbutils \
-    #rtl-sdr \
 && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get update && apt upgrade -yf \
@@ -60,8 +59,6 @@ RUN apt-get update && apt upgrade -yf \
         libfftw3-dev \
         libgsl-dev \
         liblog4cpp5-dev \
-        #libqwt5-qt4 \
-        #libqwt-dev \
         libserialport-dev \
         libusb-1.0-0 \
         libusb-1.0-0-dev \
@@ -77,9 +74,6 @@ RUN apt-get update && apt upgrade -yf \
         python-lxml \
         python-mako \
         python-numpy \
-        #python-qt4 \
-        #python-qwt5-qt4 \
-        #python-zmq \
         swig \
     && apt install -y xterm git libvolk1-bin --no-install-recommends #\
     #&& echo "xterm_executable=/usr/bin/xterm" >> /usr/local/etc/gnuradio/conf.d/grc.conf # /etc/gnuradio/conf.d/grc.conf
@@ -226,31 +220,8 @@ RUN git clone git://git.osmocom.org/gr-fosphor\
 && sudo make install\
 && sudo ldconfig
 
-RUN apt-get -y clean && apt-get -y autoremove \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /opt
-RUN git clone https://github.com/quiet/libfec \
-&& cd libfec \
-&& mkdir build \
-&& cd build \
-&& cmake .. \
-&& make \
-&& sudo make install \
-&& sudo ldconfig
-
-RUN pip3 install --user --upgrade construct requests
-
-RUN git clone --recursive https://github.com/daniestevez/gr-satellites.git\
-&& cd gr-satellites\
-&& mkdir build \
-&& cd build \
-&& cmake .. \
-&& make \
-&& sudo make install \
-&& sudo ldconfig
-
-
+#RUN apt-get -y clean && apt-get -y autoremove \
+#    && rm -rf /var/lib/apt/lists/*
 
 ENV UNAME gnuradio
 
@@ -277,31 +248,14 @@ ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib64/
 #RUN echo $PYTHONPATH
 RUN grcc /opt/gr-ieee802-15-4/examples/ieee802_15_4_OQPSK_PHY.grc
 RUN chmod +x /home/gnuradio/.grc_gnuradio/ieee802_15_4_oqpsk_phy.py
-RUN ls /opt/gr-ieee802-15-4/examples/
+
+#RUN ls /opt/gr-ieee802-15-4/examples/
 #COPY gnuradio/zig_len_doc_pluto3.8.grc /home/gnuradio/
-COPY gnuradio/attack_len_dos_zig_efr32.py /home/gnuradio/
-COPY gnuradio/post_process_DOS_efr32.py /home/gnuradio/
-COPY gnuradio/test.grc /home/gnuradio/
+#COPY gnuradio/attack_len_dos_zig_efr32.py /home/gnuradio/
+#COPY gnuradio/post_process_DOS_efr32.py /home/gnuradio/
+#COPY gnuradio/test.grc /home/gnuradio/
 #COPY gnuradio/fmradio_pluto.grc /home/gnuradio/
 #COPY gnuradio/zig_len_dos.grc /home/gnuradio/
 
 RUN sudo apt-get update && sudo apt-get install -y tcpdump wireshark
-COPY gnuradio/zig_len_dos_pluto.grc /home/gnuradio
 #ENTRYPOINT [ "gnuradio-companion" ]
-
-RUN sudo apt-get update && sudo apt-get install ssh openssh-server -y
-RUN echo 'gnuradio:ROFgyt-6' | sudo chpasswd
-
-RUN sudo mkdir /var/run/sshd
-RUN sudo sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-# SSH login fix. Otherwise user is kicked off after login
-RUN sudo sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
-ENV NOTVISIBLE "in users profile"
-RUN echo "export VISIBLE=now" | sudo tee -a /etc/profile
-#CMD sudo systemctl ssh start
-#CMD sudo systemctl ssh enable
-#CMD service ssh status
-EXPOSE 22
-#CMD sudo /usr/sbin/sshd -D
-RUN sudo apt-get install beep -y #sudo apt-get install gnustep-gui-runtime -y
-#RUN usermod -a -G audio $USERNAME
