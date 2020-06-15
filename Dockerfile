@@ -223,6 +223,28 @@ RUN git clone git://git.osmocom.org/gr-fosphor\
 #RUN apt-get -y clean && apt-get -y autoremove \
 #    && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get install autotools-dev -y
+RUN apt-get install automake -y
+RUN apt-get install autoconf -y
+
+RUN git clone git://github.com/jgaeddert/liquid-dsp.git \
+&& cd liquid-dsp \
+&& ./bootstrap.sh \
+&& ./configure \
+&& make \
+&& sudo make install \
+&& sudo ldconfig
+
+RUN git clone https://github.com/rpp0/gr-lora.git \
+&& cd gr-lora \
+&& git checkout encoder \
+&& mkdir build \
+&& cd build \
+&& cmake .. \
+&& make \
+&& sudo make install\
+&& sudo ldconfig
+
 ENV UNAME gnuradio
 
 RUN export UNAME=$UNAME UID=1000 GID=1000 \
@@ -259,3 +281,6 @@ RUN chmod +x /home/gnuradio/.grc_gnuradio/ieee802_15_4_oqpsk_phy.py
 
 RUN sudo apt-get update && sudo apt-get install -y tcpdump wireshark
 #ENTRYPOINT [ "gnuradio-companion" ]
+
+WORKDIR /home/gnuradio/
+
