@@ -10,7 +10,7 @@ so you can jump straight to the "running" section without doing a local build.
 
 ## Build instructions
 
-`docker build --tag theseuscores/gnuradio .`
+`docker build -t gnuradio .`
 
 There's also a number of override-able parameters in the Dockerfile that
 can be used to specify Gnuradio and UHD configuration.
