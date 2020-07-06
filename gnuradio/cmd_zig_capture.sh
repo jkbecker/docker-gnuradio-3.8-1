@@ -1,1 +1,0 @@
-sed -i 's/import SimpleXMLRPCServer/import xmlrpc.server as SimpleXMLRPCServer/g' /home/gnuradio/zig_capture.py; /home/gnuradio/zig_capture.py
