@@ -23,4 +23,46 @@ RUN git clone https://github.com/BastilleResearch/gr-lora.git \
 && make install\
 && ldconfig
 
+RUN apt-get -y install python-matplotlib
+
+RUN git clone https://github.com/bastibl/gr-foo.git \
+    && cd gr-foo && git checkout maint-3.7 \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make \
+    && make install \
+    && ldconfig
+
+RUN git clone https://github.com/bastibl/gr-ieee802-15-4.git \
+    && cd gr-ieee802-15-4 && git checkout maint-3.7 \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make \
+    && make install \
+    && ldconfig
+
+RUN git clone https://github.com/hhornbacher/gr-ble.git \
+    && cd gr-ble && git checkout master \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make \
+    && make install \
+    && ldconfig
+
+RUN git clone https://github.com/sdrplay/gr-osmosdr \
+    && cd gr-osmosdr && git checkout master \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make \
+    && make install \
+    && ldconfig
+
+RUN grcc gr-ieee802-15-4/examples/ieee802_15_4_OQPSK_PHY.grc
+
 CMD /usr/bin/uhd_images_downloader
+ENTRYPOINT bash
+
