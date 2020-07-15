@@ -245,6 +245,14 @@ RUN git clone https://github.com/rpp0/gr-lora.git \
 && sudo make install\
 && sudo ldconfig
 
+RUN git clone https://github.com/bsnet/bleaoa.git \
+&& cd bleaoa \
+&& git checkout master \
+&& mkdir build \
+&& cd build \
+&& cmake .. \
+&& make
+
 ENV UNAME gnuradio
 
 RUN export UNAME=$UNAME UID=1000 GID=1000 \
