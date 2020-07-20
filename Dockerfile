@@ -253,6 +253,16 @@ RUN git clone https://github.com/bsnet/bleaoa.git \
 && cmake .. \
 && make
 
+RUN git clone git://github.com/bastibl/gr-ieee802-11.git \
+    && cd gr-ieee802-11 \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make \
+    && sudo make install \
+    && sudo ldconfig
+RUN sudo sysctl -w kernel.shmmax=2147483648
+
 ENV UNAME gnuradio
 
 RUN export UNAME=$UNAME UID=1000 GID=1000 \
