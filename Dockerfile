@@ -23,4 +23,37 @@ RUN git clone https://github.com/BastilleResearch/gr-lora.git \
 && make install\
 && ldconfig
 
-CMD /usr/bin/uhd_images_downloader
+RUN git clone https://github.com/tapparelj/gr-lora_sdr.git \
+&& cd gr-lora_sdr \
+&& mkdir build\
+&& cd build\
+&& cmake ../ \
+&& make \
+&& make install\
+&& ldconfig
+
+RUN git clone https://github.com/bastibl/gr-foo.git \
+&& cd gr-foo \
+&& git checkout maint-3.7 \
+&& mkdir build \
+&& cd build \
+&& cmake .. \
+&& make \
+&& make install \
+&& ldconfig
+
+ENV GRC_BLOCKS_PATH=$GRC_BLOCKS_PATH:/gr-lora_sdr/grc
+
+RUN sed -i "s/lib64/lib/" /gr-lora_sdr/apps/setpaths.sh
+RUN sed -i "s/~/\/root/" /gr-lora_sdr/apps/setpaths.sh
+RUN sed -i "s/site/dist/" /gr-lora_sdr/apps/setpaths.sh
+RUN cat /gr-lora_sdr/apps/setpaths.sh
+# paths should be:
+#/root/lora_sdr/lib/python2.7/dist-packages/
+#/root/lora_sdr/lib/
+# source or export dont work here
+
+ENV PYTHONPATH=$PYTHONPATH:/root/lora_sdr/lib/python2.7/dist-packages
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/root/lora_sdr/lib/
+RUN /usr/bin/uhd_images_downloader
+ENTRYPOINT ["/bin/bash"]
