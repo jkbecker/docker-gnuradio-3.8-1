@@ -15,6 +15,8 @@ so you can jump straight to the "running" section without doing a local build.
 There's also a number of override-able parameters in the Dockerfile that
 can be used to specify Gnuradio and UHD configuration.
 
+The build system uses 2 build threads by default. You can increase the number of build threads by passing `--build-arg MAKE_THREADS=12` to the build command:
+
 ## Running
 
 Run the docker image, with volume mounts for running gnuradio-companion
